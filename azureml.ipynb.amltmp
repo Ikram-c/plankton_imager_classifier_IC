@@ -15,6 +15,20 @@
       "id": "bb3128e8-9909-4e0d-bf04-5883e1bbe3fb"
     },
     {
+      "cell_type": "markdown",
+      "source": [
+        "## Cleaning prior to starting"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "efe45b05-9d43-47e8-87f9-13f236c6df15"
+    },
+    {
       "cell_type": "code",
       "source": [
         "import os\n",
@@ -61,13 +75,13 @@
         {
           "output_type": "stream",
           "name": "stdout",
-          "text": "Disk usage before cleanup: {'total_GB': 118.05, 'used_GB': 70.09, 'free_GB': 47.95}\nFailed to delete /tmp/GGjEBBeMb9: [Errno 13] Permission denied: '/tmp/GGjEBBeMb9'\nFailed to delete /tmp/systemd-private-3edbae30e4f746b08be51def9389bb67-earlyoom.service-6TkUn3: [Errno 13] Permission denied: '/tmp/systemd-private-3edbae30e4f746b08be51def9389bb67-earlyoom.service-6TkUn3'\nFailed to delete /tmp/snap-private-tmp: [Errno 13] Permission denied: '/tmp/snap-private-tmp'\nDisk usage after cleanup: {'total_GB': 118.05, 'used_GB': 70.09, 'free_GB': 47.95}\n"
+          "text": "Disk usage before cleanup: {'total_GB': 118.05, 'used_GB': 56.95, 'free_GB': 61.08}\nFailed to delete /tmp/snap-private-tmp: [Errno 13] Permission denied: '/tmp/snap-private-tmp'\nFailed to delete /tmp/systemd-private-061bf6b117094be789895bf1212920e9-earlyoom.service-HDRz7o: [Errno 13] Permission denied: '/tmp/systemd-private-061bf6b117094be789895bf1212920e9-earlyoom.service-HDRz7o'\nDisk usage after cleanup: {'total_GB': 118.05, 'used_GB': 56.95, 'free_GB': 61.08}\n"
         }
       ],
-      "execution_count": 8,
+      "execution_count": 1,
       "metadata": {
         "gather": {
-          "logged": 1762444479187
+          "logged": 1763722585852
         }
       },
       "id": "86b0f9cf-fc06-498a-9de6-e43024fc0b47"
@@ -75,7 +89,7 @@
     {
       "cell_type": "markdown",
       "source": [
-        "# Setup AzureML Environment and Clone Repository\n"
+        "## Setup AzureML Environment and Clone Repository\n"
       ],
       "metadata": {},
       "id": "fd32aa50-89a1-4f0a-87ee-7af08336b07f"
@@ -137,13 +151,14 @@
         "import subprocess\n",
         "!sudo apt-get install libgl1-mesa-glx\n",
         "\n",
+        "\n",
         "# Set up the workspace\n",
         "ws = Workspace.get(name=\"citdsdp4000nc6s-mlw\",\n",
         "                   subscription_id=\"25c7e1b1-ff04-418b-842b-29a58e065da7\",\n",
         "                   resource_group=\"CIT-DS-RG-DP4000-NC6S\")\n",
         "\n",
-        "environment_name = \"plankton_imager_classifier\"\n",
-        "version=1\n",
+        "environment_name = \"PIUGDetailedClassify22\"\n",
+        "version=2\n",
         "try:\n",
         "    # Attempt to retrieve the environment\n",
         "    Environment.get(workspace=ws, name=environment_name, version=version)\n",
@@ -153,6 +168,7 @@
         "print(environment_exists)\n",
         "\n",
         "env = Environment(name=environment_name)\n",
+        "\n",
         "\n",
         "# Set up Conda dependencies\n",
         "conda_dep = CondaDependencies()\n",
@@ -172,7 +188,7 @@
         "env.python.conda_dependencies = conda_dep\n",
         "\n",
         "env.register(workspace=ws)\n",
-        "compute_name = \"e4dsv4\" # The env is not specific to a compute. BUILDING the env needs a compute\n",
+        "compute_name = \"a100PIUG\" # The env is not specific to a compute. BUILDING the env needs a compute\n",
         "\n",
         "# Build the environment\n",
         "if environment_exists==False:\n",
@@ -183,23 +199,15 @@
         {
           "output_type": "stream",
           "name": "stdout",
-          "text": "This is how you need to build an environment in azure ml\n/mnt/batch/tasks/shared/LS_root/mounts/clusters/e4dsv4/code/Users/joseph.ribeiro/plankton_imager_classifier\nReading package lists... Done\nBuilding dependency tree... Done\nReading state information... Done\nlibgl1-mesa-glx is already the newest version (23.0.4-0ubuntu1~22.04.1).\nThe following packages were automatically installed and are no longer required:\n  apport-symptoms bind9-utils dns-root-data gyp libaec-dev libaec0\n  libhdf5-103-1 libhdf5-cpp-103-1 libhdf5-fortran-102 libhdf5-hl-100\n  libhdf5-hl-cpp-100 libhdf5-hl-fortran-100 libjs-events libjs-inherits\n  libjs-is-typedarray libjs-psl libjs-source-map libjs-sprintf-js\n  libjs-typedarray-to-buffer libnode-dev libsz2 libuv1-dev node-abab\n  node-abbrev node-agent-base node-ansi-regex node-ansi-styles node-ansistyles\n  node-aproba node-archy node-are-we-there-yet node-argparse node-arrify\n  node-asap node-asynckit node-balanced-match node-brace-expansion\n  node-builtins node-cacache node-chalk node-chownr node-clean-yaml-object\n  node-cli-table node-clone node-color-convert node-color-name node-colors\n  node-columnify node-combined-stream node-commander\n  node-console-control-strings node-copy-concurrently node-core-util-is\n  node-coveralls node-cssom node-cssstyle node-debug node-decompress-response\n  node-defaults node-delayed-stream node-delegates node-depd node-diff\n  node-encoding node-end-of-stream node-err-code node-escape-string-regexp\n  node-esprima node-events node-fancy-log node-fetch node-foreground-child\n  node-form-data node-fs-write-stream-atomic node-fs.realpath\n  node-function-bind node-gauge node-get-stream node-glob node-got\n  node-graceful-fs node-growl node-has-flag node-has-unicode\n  node-https-proxy-agent node-iconv-lite node-iferr node-imurmurhash\n  node-indent-string node-inflight node-inherits node-ini node-ip\n  node-ip-regex node-is-buffer node-is-plain-obj node-is-typedarray\n  node-isarray node-isexe node-js-yaml node-jsdom node-json-buffer\n  node-json-parse-better-errors node-jsonparse node-kind-of node-lcov-parse\n  node-lodash-packages node-log-driver node-lowercase-keys node-lru-cache\n  node-mime node-mime-types node-mimic-response node-minimatch node-minimist\n  node-minipass node-mkdirp node-move-concurrently node-ms node-mute-stream\n  node-negotiator node-nopt node-npm-bundled node-npmlog node-object-assign\n  node-once node-opener node-osenv node-p-cancelable node-p-map\n  node-path-is-absolute node-process-nextick-args node-promise-inflight\n  node-promise-retry node-promzard node-psl node-pump node-punycode\n  node-quick-lru node-read node-readable-stream node-resolve node-retry\n  node-rimraf node-run-queue node-safe-buffer node-semver node-set-blocking\n  node-signal-exit node-slash node-slice-ansi node-source-map\n  node-source-map-support node-spdx-correct node-spdx-exceptions\n  node-spdx-expression-parse node-spdx-license-ids node-sprintf-js node-ssri\n  node-stack-utils node-stealthy-require node-string-decoder node-string-width\n  node-strip-ansi node-supports-color node-tap node-tap-mocha-reporter\n  node-tap-parser node-text-table node-time-stamp node-tmatch\n  node-tough-cookie node-typedarray-to-buffer node-unique-filename\n  node-universalify node-util-deprecate node-validate-npm-package-license\n  node-validate-npm-package-name node-wcwidth.js node-webidl-conversions\n  node-whatwg-fetch node-which node-wide-align node-wrappy\n  node-write-file-atomic node-ws node-yallist python3-apport\n  python3-problem-report python3-systemd\nUse 'sudo apt autoremove' to remove them.\n0 upgraded, 0 newly installed, 0 to remove and 8 not upgraded.\nsubmitting a job to build your environment. Check \"Jobs\"\n"
-        },
-        {
-          "output_type": "execute_result",
-          "execution_count": 12,
-          "data": {
-            "text/plain": "<azureml.core.environment.ImageBuildDetails at 0x7cfed4aab3d0>"
-          },
-          "metadata": {}
+          "text": "This is how you need to build an environment in azure ml\n/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100piug/code/Users/joseph.ribeiro/plankton_imager_classifier\nReading package lists... Done\nBuilding dependency tree... Done\nReading state information... Done\nlibgl1-mesa-glx is already the newest version (23.0.4-0ubuntu1~22.04.1).\nThe following packages were automatically installed and are no longer required:\n  apport-symptoms bind9-utils dns-root-data gyp libaec-dev libaec0\n  libhdf5-103-1 libhdf5-cpp-103-1 libhdf5-fortran-102 libhdf5-hl-100\n  libhdf5-hl-cpp-100 libhdf5-hl-fortran-100 libjs-events libjs-inherits\n  libjs-is-typedarray libjs-psl libjs-source-map libjs-sprintf-js\n  libjs-typedarray-to-buffer libnode-dev libsz2 libuv1-dev node-abab\n  node-abbrev node-agent-base node-ansi-regex node-ansi-styles node-ansistyles\n  node-aproba node-archy node-are-we-there-yet node-argparse node-arrify\n  node-asap node-asynckit node-balanced-match node-brace-expansion\n  node-builtins node-cacache node-chalk node-chownr node-clean-yaml-object\n  node-cli-table node-clone node-color-convert node-color-name node-colors\n  node-columnify node-combined-stream node-commander\n  node-console-control-strings node-copy-concurrently node-core-util-is\n  node-coveralls node-cssom node-cssstyle node-debug node-decompress-response\n  node-defaults node-delayed-stream node-delegates node-depd node-diff\n  node-encoding node-end-of-stream node-err-code node-escape-string-regexp\n  node-esprima node-events node-fancy-log node-fetch node-foreground-child\n  node-form-data node-fs-write-stream-atomic node-fs.realpath\n  node-function-bind node-gauge node-get-stream node-glob node-got\n  node-graceful-fs node-growl node-has-flag node-has-unicode\n  node-https-proxy-agent node-iconv-lite node-iferr node-imurmurhash\n  node-indent-string node-inflight node-inherits node-ini node-ip\n  node-ip-regex node-is-buffer node-is-plain-obj node-is-typedarray\n  node-isarray node-isexe node-js-yaml node-jsdom node-json-buffer\n  node-json-parse-better-errors node-jsonparse node-kind-of node-lcov-parse\n  node-lodash-packages node-log-driver node-lowercase-keys node-lru-cache\n  node-mime node-mime-types node-mimic-response node-minimatch node-minimist\n  node-minipass node-mkdirp node-move-concurrently node-ms node-mute-stream\n  node-negotiator node-nopt node-npm-bundled node-npmlog node-object-assign\n  node-once node-opener node-osenv node-p-cancelable node-p-map\n  node-path-is-absolute node-process-nextick-args node-promise-inflight\n  node-promise-retry node-promzard node-psl node-pump node-punycode\n  node-quick-lru node-read node-readable-stream node-resolve node-retry\n  node-rimraf node-run-queue node-safe-buffer node-semver node-set-blocking\n  node-signal-exit node-slash node-slice-ansi node-source-map\n  node-source-map-support node-spdx-correct node-spdx-exceptions\n  node-spdx-expression-parse node-spdx-license-ids node-sprintf-js node-ssri\n  node-stack-utils node-stealthy-require node-string-decoder node-string-width\n  node-strip-ansi node-supports-color node-tap node-tap-mocha-reporter\n  node-tap-parser node-text-table node-time-stamp node-tmatch\n  node-tough-cookie node-typedarray-to-buffer node-unique-filename\n  node-universalify node-util-deprecate node-validate-npm-package-license\n  node-validate-npm-package-name node-wcwidth.js node-webidl-conversions\n  node-whatwg-fetch node-which node-wide-align node-wrappy\n  node-write-file-atomic node-ws node-yallist python3-apport\n  python3-problem-report python3-systemd\nUse 'sudo apt autoremove' to remove them.\n0 upgraded, 0 newly installed, 0 to remove and 8 not upgraded.\nFalse\nazure-common\nazure-core\nazure-mgmt-core\nazure-mgmt-storage\nazure-storage-blob\nazure-servicebus\nfastai==2.7.12\nnumpy<1.25\nimutils\ntorch\ntorchvision\ntorchaudio\npandas\nnumpy\npolars\nseaborn\nxlsxwriter\nchardet\ngeopandas\npython-docx\nmemory_profiler\npyarrow\nfiona\npyproj\nopencv-python\nsubmitting a job to build your environment. Check \"Jobs\"\n"
         }
       ],
-      "execution_count": 12,
+      "execution_count": 3,
       "metadata": {
         "collapsed": false,
         "tags": [],
         "gather": {
-          "logged": 1762445009212
+          "logged": 1763723093559
         },
         "jupyter": {
           "outputs_hidden": false
@@ -208,75 +216,130 @@
       "id": "a82cc9a5-8f24-4d88-b105-8d92fd4a0832"
     },
     {
-      "cell_type": "code",
-      "source": [
-        "# Our git repository contains not just code but also a model .pth file so we need to increase the allowance\n",
-        "\n",
-        "\n",
-        "\n",
-        "wdirect=os.getcwd() \n",
-        "import azureml\n",
-        "from azureml.core import ScriptRunConfig, Experiment\n",
-        "from azureml.core.compute import ComputeTarget\n",
-        "import azureml._restclient.snapshots_client\n",
-        "azureml._restclient.snapshots_client.SNAPSHOT_MAX_SIZE_BYTES = 1073741824 #1GB\n",
-        "azureml._restclient.constants.SNAPSHOT_MAX_SIZE_BYTES = 1073741824\n",
-        "\n",
-        "\n",
-        "# Define your compute target\n",
-        "compute_target = ComputeTarget(workspace=ws, name=\"e4dsv4\")\n",
-        "\n",
-        "# Define the command-line arguments for the script \n",
-        "arguments = [\n",
-        "    '--folder', 'data/examples/',\n",
-        "    '--output', './outputs/classifications.csv', # This is actually ending up in /mnt/azureml/cr/j/707202a285c94a24b8001fd1dd0f2c02/exe/wd/data/classifications.csv\n",
-        "    '-m', '2',\n",
-        "    '-b', '100'\n",
-        "]\n",
-        "\n",
-        "print(\"You should set your ScriptRunConfig source directory to:\")\n",
-        "print(os.getcwd())\n",
-        "\n",
-        "# Create a ScriptRunConfig\n",
-        "src = ScriptRunConfig(\n",
-        "    source_directory=\"/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro//rapid-plankton/edge-ai\",\n",
-        "    script='classifier.py',  # Script to run\n",
-        "    arguments=arguments,  # Command-line arguments for the script\n",
-        "    compute_target=compute_target,\n",
-        "    environment=env\n",
-        ")\n",
-        "\n",
-        "# Submit the experiment\n",
-        "experiment = Experiment(workspace=ws, name='my-gpu-experiment')\n",
-        "run = experiment.submit(config=src)\n",
-        "run.wait_for_completion(show_output=True)\n",
-        "\n",
-        "\n",
-        "file_names = run.get_file_names()\n",
-        "print(f\"Files in run: {file_names}\")\n",
-        "\n",
-        "\n",
-        "print(\"Experiment completed.\")\n",
-        "run.download_files(\"outputs/classifications.csv\", output_directory='/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro/')\n",
-        "# I think this should download the std_log.txt. The print statement in this log \"/mnt/azureml/cr/j/38a670803a1a447cbc7d3eefec4f46f2/exe/wd\" indicates where the run took place. But this way of running seems wrong. I need to accept that classifier.py needs modification to also run from azure and upload to blob."
-      ],
-      "outputs": [],
-      "execution_count": null,
+      "cell_type": "markdown",
+      "source": [],
       "metadata": {
-        "jupyter": {
-          "source_hidden": false,
-          "outputs_hidden": false
-        },
         "nteract": {
           "transient": {
             "deleting": false
           }
-        },
-        "gather": {
-          "logged": 1762442815672
         }
       },
-      "id": "e804a8f0-2139-4f5c-a195-cc80d0ed7f61"
+      "id": "ab8e638b-1c37-4e2c-8d52-e45c4863e145"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Testing to see if the env can load the required modules"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "ae190fe9-4982-42d8-9882-2b4e24619915"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from azureml.core import ScriptRunConfig, Experiment, ComputeTarget\n",
+        "\n",
+        "compute_target = ComputeTarget(workspace=ws, name=\"a100PIUG\")\n",
+        "\n",
+        "src = ScriptRunConfig(\n",
+        "    source_directory=\".\",\n",
+        "    script=\"test_env.py\",\n",
+        "    compute_target=compute_target,\n",
+        "    environment=env  # your built environment object\n",
+        ")\n",
+        "\n",
+        "experiment = Experiment(workspace=ws, name=\"env_test_run\")\n",
+        "run = experiment.submit(config=src)\n",
+        "\n",
+        "print(\"🚀 Job submitted. Check the 'Jobs' tab in Azure ML Studio.\")"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": "Submitting /mnt/batch/tasks/shared/LS_root/mounts/clusters/a100piug/code/Users/james.scott/detailed_classifier_PIUG directory for run. The size of the directory >= 25 MB, so it can take a few minutes.\n"
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "🚀 Job submitted. Check the 'Jobs' tab in Azure ML Studio.\n"
+        }
+      ],
+      "execution_count": 5,
+      "metadata": {
+        "gather": {
+          "logged": 1762764498329
+        }
+      },
+      "id": "88c5c368-08f5-452d-b191-cf0bc9084840"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Connecting to the survey directory"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "7f824736-b837-44db-9c0c-37e5894aee7b"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from azureml.core import Workspace, Datastore\n",
+        "\n",
+        "# 1️⃣ Connect to your current workspace\n",
+        "ws = Workspace.from_config()\n",
+        "\n",
+        "# 2️⃣ Access your datastore by name\n",
+        "datastore = Datastore.get(ws, datastore_name='cend1025meggs')\n",
+        "\n",
+        "# 3️⃣ Display its properties\n",
+        "print(\"Datastore name:\", datastore.name)\n",
+        "print(\"Datastore type:\", datastore.datastore_type)\n",
+        "print(\"Container name:\", datastore.container_name)\n",
+        "print(\"Account name:\", datastore.account_name)\n",
+        "print(\"Created by: James Scott\")  # metadata is not automatically stored in v1\n"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "Datastore name: cend1025meggs\nDatastore type: AzureBlob\nContainer name: cend-10-25-megsneps-earlysummer-northsea\nAccount name: citprodc8603uksa\nCreated by: James Scott\n"
+        }
+      ],
+      "execution_count": 6,
+      "metadata": {
+        "gather": {
+          "logged": 1762764602546
+        }
+      },
+      "id": "fb93ed81-45f1-4932-b69e-08baec5279ab"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Checking we can write to Azure"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "b087462d-c7ad-4b28-ad26-7e87b1bebf76"
     },
     {
       "cell_type": "code",
@@ -289,46 +352,59 @@
         "import os\n",
         "\n",
         "\n",
-        "container_name = 'cend09-25-mpa-echannel-earlysummer' \n",
-        "datastore_name = 'cend0925mpaechannelearlysummer'\n",
+        "container_name = 'cend-10-25-megsneps-earlysummer-northsea' \n",
+        "datastore_name = 'cend1025meggs'\n",
         "\n",
         "datastore = Datastore.get(ws, datastore_name)\n",
         "\n",
         "blob_account_name = datastore.account_name \n",
         "blob_account_token = datastore.sas_token\n",
-        "print(datastore.sas_token)\n",
+        "# print(datastore.sas_token)\n",
         "blob_service_client = BlobServiceClient( account_url=f\"https://{blob_account_name}.blob.core.windows.net\", credential=blob_account_token )\n",
         "\n",
         "container_client = blob_service_client.get_container_client(container_name)\n",
         "\n",
         "# An example of how to upload file to blob storage (to extract the results or outputs after a job run)\n",
-        "if False:\n",
-        "    with open(\"/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro//outputs/classifications.csv\", \"rb\") as data:\n",
-        "        container_client.upload_blob(name=\"classifications.csv\", data=data, overwrite=True)\n",
-        "    print(f\"File classifications.csv has been uploaded to Blob Storage. done.\")\n"
+        "#if False:\n",
+        "#    with open(\"/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro//outputs/classifications.csv\", \"rb\") as data:\n",
+        "#        container_client.upload_blob(name=\"classifications.csv\", data=data, overwrite=True)\n",
+        "#    print(f\"File classifications.csv has been uploaded to Blob Storage. done.\")\n",
+        "\n",
+        "from azure.storage.blob import BlobClient\n",
+        "\n",
+        "# Define the blob name and content\n",
+        "blob_name = \"AzureML-testwriteability.txt\"\n",
+        "content = \"Hello from Azure ML! I could really use a chocolate digestive\"\n",
+        "\n",
+        "# Create a BlobClient\n",
+        "blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)\n",
+        "\n",
+        "\n",
+        "\n",
+        "# Upload the text content\n",
+        "blob_client.upload_blob(content, overwrite=True)\n",
+        "\n",
+        "print(f\"✅ Uploaded '{blob_name}' to container '{container_name}'\")\n"
       ],
-      "outputs": [],
-      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "✅ Uploaded 'AzureML-testwriteability.txt' to container 'cend-10-25-megsneps-earlysummer-northsea'\n"
+        }
+      ],
+      "execution_count": 7,
       "metadata": {
-        "jupyter": {
-          "source_hidden": false,
-          "outputs_hidden": false
-        },
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        },
         "gather": {
-          "logged": 1762442815742
+          "logged": 1762764613222
         }
       },
-      "id": "cfe7d43e-e1d4-46ef-9574-bb928862e5ab"
+      "id": "6a82a977-6944-46b4-8849-e1f32a28ad95"
     },
     {
       "cell_type": "markdown",
       "source": [
-        "It seems that a compute instance typcially has ~100 GB of free storage, so the above approach should be fine usually but it depends on the size of folder and what compute instance you have chosen. But I still need to change this approach to move the data INTO the compute direct from blob, and that is my next task. Currently it just comes from an \"examples\" directory. Also once done, I should move the examples back to where they were."
+        "## Checking we can read from azure"
       ],
       "metadata": {
         "nteract": {
@@ -337,233 +413,277 @@
           }
         }
       },
-      "id": "addf93bf-91b8-40cf-b9be-eb85dd29abfd"
-    },
-    {
-      "cell_type": "markdown",
-      "source": [
-        "# populate list of blob folders to submit a job for - convert to code cell if you wish to run this (done as a means of skipping this bit)\n",
-        "\n",
-        "import os\n",
-        "import concurrent.futures\n",
-        "from datetime import datetime, timedelta\n",
-        "\n",
-        "# Initialize a global list to keep track of successful downloads\n",
-        "successful_downloads = []\n",
-        "\n",
-        "def download_blob(blob_service_client, container_name, blob_path, download_path):\n",
-        "    blob_client = blob_service_client.get_blob_client( blob=blob_path)\n",
-        "    print(f\"Downloading {blob_path} to {download_path}...\")\n",
-        "    try:\n",
-        "        with open(download_path, \"wb\") as download_file:\n",
-        "            download_file.write(blob_client.download_blob().readall())\n",
-        "        os.remove(download_path)\n",
-        "        print(f\"File {download_path} downloaded and deleted successfully.\")\n",
-        "        successful_downloads.append(blob_path)  # Add the successful blob path to the list\n",
-        "    except Exception as e:\n",
-        "        print(f\"Failed to download {blob_path} or delete the file: {e}\")\n",
-        "\n",
-        "def download_files_for_days(blob_service_client, container_name, start_date, end_date, destination_folder='tempfolder'):\n",
-        "    tasks = []\n",
-        "    current_date = start_date\n",
-        "    # Create a ThreadPoolExecutor with up to 100 concurrent downloaders\n",
-        "    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:\n",
-        "        while current_date <= end_date:\n",
-        "            day_str = current_date.strftime('%Y-%m-%d')\n",
-        "            for hour in range(24):\n",
-        "                for minute in range(60):\n",
-        "                    blob_path = f\"{day_str}/{hour:02d}{minute:02d}/Background.tif\"\n",
-        "                    download_path = os.path.join(destination_folder, f\"Background_{day_str}_{hour:02d}{minute:02d}.tif\")\n",
-        "                    if not os.path.exists(destination_folder):\n",
-        "                        os.makedirs(destination_folder)\n",
-        "                    # Submit the download task to the executor\n",
-        "                    future = executor.submit(download_blob, blob_service_client, container_name, blob_path, download_path)\n",
-        "                    tasks.append(future)\n",
-        "            current_date += timedelta(days=1)\n",
-        "        # Wait for all tasks to complete\n",
-        "        for future in concurrent.futures.as_completed(tasks):\n",
-        "            future.result()\n",
-        "\n",
-        "\n",
-        "print(successful_downloads)\n",
-        "\n",
-        "start_date = datetime(2024, 5, 16)\n",
-        "end_date = datetime(2024, 5, 23)\n",
-        "download_files_for_days(container_client, container_name, start_date, end_date)\n",
-        "\n",
-        "dataset_folders = [path.replace('Background.tif', '') for path in successful_downloads]\n",
-        "print(dataset_folders)\n",
-        "\n",
-        "import shutil\n",
-        "shutil.rmtree(\"tempfolder\")\n"
-      ],
-      "metadata": {
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        }
-      },
-      "id": "60d6d7f1-0065-4f8c-a20c-ac03d281e5af"
-    },
-    {
-      "cell_type": "markdown",
-      "source": [
-        "\n"
-      ],
-      "metadata": {
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        }
-      },
-      "id": "a6a17c10-cd5d-4a6a-b2cf-51988f5648d5"
+      "id": "2259f4d1-ca2f-430e-b58b-46c96c6033f8"
     },
     {
       "cell_type": "code",
       "source": [
-        "from azureml.core import Dataset, Experiment, Workspace\n",
-        "from azureml.core.compute import ComputeTarget\n",
-        "from azureml.core.script_run_config import ScriptRunConfig\n",
-        "from azureml.core.environment import Environment\n",
+        "from azure.storage.blob import BlobClient\n",
         "\n",
-        "# Filter blobs that are .tar files only\n",
-        "tar_blobs = [blob for blob in container_client.list_blobs() if blob.name.endswith('.tar')]\n",
+        "# Define the blob name\n",
+        "blob_name = \"AzureML-testwriteability.txt\"\n",
         "\n",
-        "i=0\n",
-        "for blob in tar_blobs:\n",
-        "    i=i+1\n",
-        "    if i>0#:49:\n",
-        "        folder_name = blob.name\n",
+        "# Create a BlobClient for the file\n",
+        "blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)\n",
         "\n",
-        "        # Register dataset\n",
-        "        dataset = Dataset.File.from_files(path=(datastore, '/' + folder_name))\n",
-        "        dataset = dataset.register(workspace=ws, name=folder_name, create_new_version=True)\n",
-        "        dataset = Dataset.get_by_name(ws, name=folder_name)\n",
-        "        print(\"Dataset registered for .tar file:\", folder_name)\n",
+        "# Download the blob content\n",
+        "downloaded_data = blob_client.download_blob().readall()\n",
         "\n",
-        "        # Configure and submit job\n",
-        "        src = ScriptRunConfig(\n",
-        "            source_directory=\"/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro/rapid-plankton/edge-ai\",\n",
-        "            script='azure_processing_tar_2025.py',\n",
-        "            arguments=['-m', '2',\n",
-        "                '-b', '2500',\n",
-        "                '--wsname', 'citdsdp4000nc6s-mlw',\n",
-        "                '--wssubscription_id', '25c7e1b1-ff04-418b-842b-29a58e065da7',\n",
-        "                '--wsresource_group', 'CIT-DS-RG-DP4000-NC6S',\n",
-        "                '--dsname', folder_name,\n",
-        "                '--datastorename', datastore_name],\n",
-        "            compute_target=compute_target,\n",
-        "            environment=env\n",
-        "        )\n",
+        "# Convert bytes to string\n",
+        "content = downloaded_data.decode(\"utf-8\")\n",
         "\n",
-        "        experiment = Experiment(workspace=ws, name='bigger-gpu-experiment')\n",
-        "        run = experiment.submit(config=src)\n",
-        "        run.wait_for_completion(show_output=True)\n"
+        "print(f\"✅ Read content from '{blob_name}':\")\n",
+        "print(content)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "✅ Read content from 'AzureML-testwriteability.txt':\nHello from Azure ML! I could really use a chocolate digestive\n"
+        }
+      ],
+      "execution_count": 8,
+      "metadata": {
+        "gather": {
+          "logged": 1762764615918
+        }
+      },
+      "id": "0711de2b-a0d1-479c-9055-547167d4e593"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import os\n",
+        "import sys\n",
+        "\n",
+        "blob_names = []\n",
+        "print(\"✅ Listing all .tar blobs in container:\")\n",
+        "\n",
+        "# Only include blobs that end with .tar\n",
+        "for i, blob in enumerate(container_client.list_blobs(), start=1):\n",
+        "    if blob.name.endswith(\".tar\"):\n",
+        "        blob_names.append(blob.name)\n",
+        "    # overwrite the same line with progress info\n",
+        "    print(f\"🟢 Scanned {i} blobs...\", end=\"\\r\", flush=True)\n",
+        "\n",
+        "print(f\"\\n✅ Total .tar blobs found: {len(blob_names)}\")\n",
+        "\n",
+        "data = []\n",
+        "for i, name in enumerate(blob_names, start=1):\n",
+        "    # Get blob size\n",
+        "    blob_client = blob_service_client.get_blob_client(container=container_name, blob=name)\n",
+        "    props = blob_client.get_blob_properties()\n",
+        "    size_mb = round(props.size / (1024 * 1024), 2)\n",
+        "\n",
+        "    # Extract datetime safely\n",
+        "    if '/' in name:\n",
+        "        date_part, file_part = name.split('/', 1)\n",
+        "        time_part = file_part.replace('.tar', '')\n",
+        "        formatted_time = f\"{time_part[:2]}:{time_part[2:]}\" if len(time_part) == 4 else \"\"\n",
+        "        full_datetime = f\"{date_part} {formatted_time}\"\n",
+        "    else:\n",
+        "        full_datetime = \"\"\n",
+        "\n",
+        "    data.append({\"path\": name, \"datetime\": full_datetime, \"size_MB\": size_mb})\n",
+        "\n",
+        "    # show live progress without spamming\n",
+        "    print(f\"📦 Processed {i}/{len(blob_names)} .tar files...\", end=\"\\r\", flush=True)\n",
+        "\n",
+        "print(f\"\\n✅ Finished processing all {len(blob_names)} .tar blobs\")\n",
+        "\n",
+        "# Save results\n",
+        "df = pd.DataFrame(data)\n",
+        "output_file = \"blob_paths_with_sizes.csv\"\n",
+        "df.to_csv(output_file, index=False)\n",
+        "\n",
+        "print(f\"✅ DataFrame saved to {os.path.abspath(output_file)}\")\n",
+        "print(df.head())\n"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "✅ Listing all .tar blobs in container:\n📦 Processed 2458/2458 .tar files...\n✅ Finished processing all 2458 .tar blobs\n✅ DataFrame saved to /mnt/batch/tasks/shared/LS_root/mounts/clusters/a100piug/code/Users/james.scott/detailed_classifier_PIUG/blob_paths_with_sizes.csv\n                  path          datetime  size_MB\n0  2025-06-01/0734.tar  2025-06-01 07:34  2068.06\n1  2025-06-01/0740.tar  2025-06-01 07:40  2632.46\n2  2025-06-01/0750.tar  2025-06-01 07:50  2415.18\n3  2025-06-01/0800.tar  2025-06-01 08:00  3026.76\n4  2025-06-01/0810.tar  2025-06-01 08:10  1679.07\n"
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": "IOPub message rate exceeded.\nThe Jupyter server will temporarily stop sending output\nto the client in order to avoid crashing it.\nTo change this limit, set the config variable\n`--ServerApp.iopub_msg_rate_limit`.\n\nCurrent values:\nServerApp.iopub_msg_rate_limit=1000.0 (msgs/sec)\nServerApp.rate_limit_window=3.0 (secs)\n\n"
+        }
+      ],
+      "execution_count": 9,
+      "metadata": {
+        "gather": {
+          "logged": 1762522938757
+        }
+      },
+      "id": "992cb0e1-bf83-44d3-9a02-35105347ceeb"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Listing the .tar files and their sizes"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "40354d16-65d2-465e-a01f-33dd1ec6093b"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# --- (Assuming your df is already created as in your code) ---\n",
+        "print(\"📈 Summary statistics of blob sizes (MB):\")\n",
+        "print(df[\"size_MB\"].describe())\n",
+        "\n",
+        "# --- Plot the distribution ---\n",
+        "plt.figure(figsize=(8, 5))\n",
+        "plt.hist(df[\"size_MB\"], bins=30)\n",
+        "plt.title(\"Distribution of Blob Sizes (.tar files)\")\n",
+        "plt.xlabel(\"Size (MB)\")\n",
+        "plt.ylabel(\"Number of Files\")\n",
+        "plt.grid(True, linestyle=\"--\", alpha=0.6)\n",
+        "plt.show()\n"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "📈 Summary statistics of blob sizes (MB):\ncount     2458.000000\nmean      2503.113784\nstd       2414.844638\nmin          0.030000\n25%        538.612500\n50%       1582.540000\n75%       4145.420000\nmax      20876.350000\nName: size_MB, dtype: float64\n"
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": "<Figure size 800x500 with 1 Axes>",
+            "image/png": "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5OTknPU4WZYxePBgDB48GK+88gpefPFF/OlPf8I333yD7OzsZm+Idu/e7fSxEAJ79uxx2o83Ojoa5eXlLp974MABdOvWzfFxU+bWpUsXrFy5ElVVVU5nb+2/IrZfDHW+unTpgp9++gmapjmdvW3u17Grr68H0HCW/mxz0jQNu3fvdpxBBhouMCovL3eZ0549eyCEcPr6/vLLLwBwTvu5RkdHIyUlBT///PNZj/v222/xxBNP4LHHHsNdd93l8nhKSgr+97//YfDgwR7fe0+5dicgIAApKSnYt2+fV3XpzWHNmjU4duwYFixYgEGDBjnGvX3eltChQweEh4dDVVXd+s/Url073HHHHbjjjjtQW1uLW2+9FS+88AImTZqE4OBgx3H79u1zyhRRW8JlCURtyOrVqzF9+nQkJye7bRLs3N3Zyn62zL4+0n73I3fN5rn48MMPndYBf/rppzhy5AiGDh3qGEtJScEPP/zgtC/qokWLXLYMa8rcrrvuOqiqir///e9O46+++iokSXJ6/fNx3XXXwWaz4b///a9jrL6+Hm+88QbCwsJwxRVXNMvr2H311VcAgN69e591TgAwa9Ysp3H7GdDc3Fyn8cOHDzvtoFBZWYkPP/wQffr0cWw95s7//vc/x24OZzpw4AB27NiB1NRU3c89cuQIbr/9dgwcONBlNwG722+/Hb/++iv+8Y9/uDx26tQpnDhxAoB3udaTlZWFLVu2uIxXVFRg165dTksK9PJnPzN85ln+2tpavPXWW2d97ZakKAqGDRuGzz77zO0PGUePHnX8/7Fjx5wes1gsSE9PhxACdXV1To/9+OOPujuUEPk6nrkl8lFLly7Frl27UF9fj+LiYqxevRorVqxAly5d8OWXXzqdZWls2rRpWLduHXJzc9GlSxeUlJTgrbfeQufOnTFw4EAADY1mVFQUZs+ejfDwcLRr1w79+vXzuPWUnpiYGAwcOBCjRo1CcXExZs2ahQsuuMBpu7L7778fn376KYYMGYLbb78de/fuxb/+9S+XbY+aMrcbbrgBV111Ff70pz9h//796N27N77++mt88cUXeOyxx5q0pdLZjBkzBu+88w5GjhyJrVu3omvXrvj000+xfv16zJo166xroD359ddfHfsW19bW4n//+x/eeecdtG/f/qxLEnr37o0RI0bg3XffdfzKfNOmTfjggw9w880346qrrnI6/sILL8To0aOxefNmxMfH4/3330dxcTHmzJlz1vmtWLECU6ZMwY033oj+/fsjLCwMhYWFeP/991FTU+O0X21jjzzyCI4ePYonn3wSH3/8sdNjvXr1Qq9evXDPPffgk08+wR/+8Ad88803GDBgAFRVxa5du/DJJ59g+fLl6Nu3r1e51nPTTTfho48+wi+//OJYywsAn3/+OUaNGoU5c+Y49pbt06cPFEXByy+/jIqKCgQFBeHqq6/G7373O0RHR2PEiBF45JFHIEkSPvroI8OXtLz00kv45ptv0K9fPzzwwANIT09HaWkpfvzxR6xcudLxQ8G1114Lq9WKAQMGID4+Hjt37sTf//535ObmOuV369atKC0txU033WRUSUTnx5hNGohIj31LIPsfi8UirFaruOaaa8Rrr73mtOWUXePtl1atWiVuuukmkZCQICwWi0hISBB33nmn+OWXX5w+74svvhDp6ekiICDAaeutK664QnfLIL2twP7zn/+ISZMmibi4OBESEiJyc3PFgQMHXD7/b3/7m+jUqZMICgoSAwYMEFu2bHF5zrPNzd3WSFVVVWL8+PEiISFBBAYGiu7du4u//OUvQtM0p+MAiHHjxrnMSW+LssaKi4vFqFGjRPv27YXFYhGZmZlutys7n63AZFkWcXFx4s4773TaskwI99ts1dXVialTp4rk5GQRGBgoEhMTxaRJk5y2pTpzTsuXLxe9evUSQUFBIi0tTcyfP9/jHAsLC8Wzzz4r+vfvL+Li4kRAQIDo0KGDyM3NddpuzN0c7Vtiuftz5nZWtbW14uWXXxYZGRkiKChIREdHi0suuURMnTpVVFRUCCG8z7U7NTU1on379mL69OlO4/bvt8bv4z/+8Q/RrVs3oSiK07Zg69evF/379xchISEiISFBPPnkk2L58uUuW4ed7XvInfPZCkyIhmyOGzdOJCYmisDAQGG1WsXgwYPFu+++6zjmnXfeEYMGDRKxsbEiKChIpKSkiIkTJzq+vnZPPfWUSEpKcvn+IWorJCF87CoKIiKiFjB9+nTMmTMHu3fvbrULGNuampoadO3aFU8//TQeffRRo6dDdE645paIiExh/PjxOH78uMvyCDptzpw5CAwMxB/+8Aejp0J0znjmloiIiIj8Bs/cEhEREZHfYHNLRERERH6DzS0RERER+Q02t0RE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+eQT9O7dG506dXJ5bMSIEXj//fcdH586dQoff/wxRowY4fa54uLiYLVakZycjEceeQTJycn48ccfnY654YYb8PHHH3vzJSIiahFsbomIWkBYWBjCwsKwcOFC1NTUePU5TzzxBI4cOeL489e//hWhoaHo27cvAGDGjBn48MMPMXv2bOTn52P8+PG4++67sXbtWt3n/Pbbbx2f39g999yDb7/9FkVFRQCAzz77DF27dsXFF1981nkKIbBs2TIUFRWhX79+To9ddtll2LRpk9c1ExE1Nza3REQtICAgAHPnzsUHH3yAqKgoDBgwAM888wx++ukn3c8JCwuD1WqF1WrF/v37MXnyZMyZMwc9e/ZETU0NXnzxRbz//vvIyclBt27dMHLkSNx999145513dJ/zwIEDSEhIcPtYXFwchg4d6jgz/P777+O+++7Tfa7OnTsjLCwMFosFubm5mDJlCgYNGuR0TEJCAmpra2Gz2c7y1SEiajlsbomIWsiwYcNw+PBhfPnllxgyZAjWrFmDiy++2NFM6ikqKsLNN9+MJ554ArfffjsAYM+ePTh58iSuueYax1nhsLAwfPjhh9i7d6/uc506dQrBwcG6j993332YO3cuCgsLsWHDBtx11126x3777bfYvn07tm/fjn/+85948cUX8fbbbzsdExISAgA4efLkWWskImopAUZPgIjInwUHB+Oaa67BNddcgz//+c+4//77MWXKFLcXeAHAiRMncOONNyIrKwvTpk1zjB8/fhwAsHjxYpf1s2e7IK19+/YoKyvTfXzo0KEYM2YMRo8ejRtuuAGxsbG6xyYnJyMqKgoAkJGRgY0bN+KFF17A2LFjHceUlpYCADp06KD7PERELYnNLRFRK0pPT9fd11YIgbvvvhuapuGjjz5y2o4rPT0dQUFBKCoqwhVXXOH161100UXYsWOH7uMBAQG49957MXPmTCxdutTr5wUARVFw6tQpp7Gff/4ZnTt3Rvv27Zv0XEREzYXNLRFRCzh27Bh+//vf47777kOvXr0QHh6OLVu2YObMmbjpppvcfs5zzz2HlStX4uuvv8bx48cdZ2sjIyMRHh6OJ554AuPHj4emaRg4cCAqKiqwfv16RERE6O5wkJOTg/vvvx+qqkJRFLfHTJ8+HRMnTjzrWVsAKCkpQXV1NWpqarBp0yZ89NFHuO2225yO+fbbb3Httdd6+vIQEbUYNrdERC0gLCwM/fr1w6uvvoq9e/eirq4OiYmJeOCBB/DMM8+4/Zy1a9fi+PHj+N3vfuc0PmfOHIwcORLTp09Hhw4dMGPGDBQWFiIqKgoXX3yx7vMBDcsOAgICsHLlSuTk5Lg9xmKxeHWmNTU1FUDD2d7ExEQ8+OCDeO655xyPV1dXY+HChVi2bJnH5yIiaimSEEIYPQkiImo5b775Jr788kssX768RV/n7bffxueff46vv/66RV+HiOhseOaWiMjPPfjggygvL0dVVZXjFrwtITAwEG+88UaLPT8RkTd45paIiIiI/Ab3uSUiIiIiv8HmloiIiIj8BptbIiIiIvIbbG6JiIiIyG+wuSUiIiIiv8HmloiIiIj8BptbIiIiIvIbbG6JiIiIyG+wuSUiIiIiv/H/AKtece3GchrcAAAAAElFTkSuQmCC"
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 63,
+      "metadata": {
+        "gather": {
+          "logged": 1762517508566
+        }
+      },
+      "id": "5cfbb41f-c2ff-4c77-80a7-19cebce30b59"
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Finding the tenth smallest for a test"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      },
+      "id": "9cfc24a6-dd5c-4e17-8450-7952099c220a"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Sort by size\n",
+        "df_sorted = df.sort_values(by=\"size_MB\", ascending=True).reset_index(drop=True)\n",
+        "\n",
+        "# Check if there are at least 10 blobs\n",
+        "if len(df_sorted) >= 10:\n",
+        "    tenth_smallest = df_sorted.iloc[9]  # 0-indexed, so index 9 = 10th smallest\n",
+        "    print(\"🔟 10th smallest blob:\")\n",
+        "    print(tenth_smallest)\n",
+        "else:\n",
+        "    print(f\"⚠️ Only {len(df_sorted)} blobs found — fewer than 10 available.\")\n"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "🔟 10th smallest blob:\npath        2025-06-11/0940.tar\ndatetime       2025-06-11 09:40\nsize_MB                   68.76\nName: 9, dtype: object\n"
+        }
+      ],
+      "execution_count": 65,
+      "metadata": {
+        "gather": {
+          "logged": 1762517642500
+        }
+      },
+      "id": "be3363a2-c007-4b33-8fb8-cb9583c4e13d"
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from azureml.core import Workspace, Environment\n",
+        "\n",
+        "env = Environment.get(workspace=ws, name=\"PIUGDetailed\")\n",
+        "env.python.conda_dependencies.add_pip_package(\"numpy<1.25\")\n",
+        "env.register(workspace=ws)\n",
+        "\n",
+        "from azureml.core import Workspace, Experiment, Environment, ScriptRunConfig, Dataset, ComputeTarget\n",
+        "\n",
+        "import pandas as pd\n",
+        "\n",
+        "# Path to your CSV\n",
+        "df = pd.read_csv(\"blob_paths_with_sizes.csv\")\n",
+        "df = df[df['path'].str.endswith(\".tar\")].sort_values(\"size_MB\").reset_index(drop=True)\n",
+        "tenth_blob_path = df.iloc[9]['path']  # 10th smallest\n",
+        "print(tenth_blob_path)\n",
+        "print(\"10th smallest blob path:\", tenth_blob_path)\n",
+        "\n",
+        "ws = Workspace.get(\n",
+        "    name=\"citdsdp4000nc6s-mlw\",\n",
+        "    subscription_id=\"25c7e1b1-ff04-418b-842b-29a58e065da7\",\n",
+        "    resource_group=\"CIT-DS-RG-DP4000-NC6S\"\n",
+        ")\n",
+        "print(\"Workspace loaded:\", ws.name)\n",
+        "\n",
+        "\n",
+        "compute_name = \"a100PIUG\"  # replace with your AML compute name\n",
+        "compute_target = ComputeTarget(workspace=ws, name=compute_name)\n",
+        "\n",
+        "\n",
+        "from azureml.core import Environment\n",
+        "\n",
+        "env = Environment.get(workspace=ws, name=\"PIUGDetailedClassify2\")\n",
+        "\n",
+        "\n",
+        "from azureml.core import ScriptRunConfig\n",
+        "\n",
+        "src = ScriptRunConfig(\n",
+        "    source_directory=\"./\",  # folder containing your script\n",
+        "    script=\"plankton_inference_single_tar.py\",\n",
+        "    arguments=[\n",
+        "        \"--tar_file\", tenth_blob_path,\n",
+        "        \"--model_weights\", \"models/Plankton_imager_v03_stage-2_Best.pth\",\n",
+        "        \"--train_dataset\", \"data/dummy_train\",\n",
+        "        \"--cruise_name\", \"MEGGS25\",\n",
+        "        \"--batch_size\", 32,\n",
+        "        \"--density_constant\", 1.0\n",
+        "    ],\n",
+        "    compute_target=compute_target,\n",
+        "    environment=env\n",
+        ")\n",
+        "\n",
+        "from azureml.core import Experiment\n",
+        "\n",
+        "experiment_name = \"plankton-inference\"\n",
+        "exp = Experiment(workspace=ws, name=experiment_name)\n",
+        "run = exp.submit(src)\n",
+        "print(\"Run submitted. Run ID:\", run.id)\n"
       ],
       "outputs": [],
       "execution_count": null,
-      "metadata": {
-        "jupyter": {
-          "source_hidden": false,
-          "outputs_hidden": false
-        },
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        },
-        "gather": {
-          "logged": 1762442815755
-        }
-      },
-      "id": "cc8f957e-9193-48f4-8932-ac377025a72b"
-    },
-    {
-      "cell_type": "markdown",
-      "source": [
-        "This last chunk of code is converted to markdown because it was not working properly, but it should submit multiple jobs. In reality it was not working, the jobs never finish and I think the cpu is out of memory.\n",
-        "The solution here would be to use cupy to run the gps and size steps on the GPU (they are a bottleneck). But instead I will use a cheaper compute instance for now and accept the linear processing as we have no plankton imager project time this year..."
-      ],
-      "metadata": {
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        }
-      },
-      "id": "097d4daa-39a8-4958-a080-3868d3347f53"
-    },
-    {
-      "cell_type": "markdown",
-      "source": [
-        "from concurrent.futures import ThreadPoolExecutor, as_completed\n",
-        "from azureml.core import Dataset, Experiment, Workspace\n",
-        "from azureml.core.script_run_config import ScriptRunConfig\n",
-        "from azureml.core.environment import Environment\n",
-        "\n",
-        "# Define the job submission function\n",
-        "def submit_job(blob_name):\n",
-        "    try:\n",
-        "        # Register dataset\n",
-        "        dataset = Dataset.File.from_files(path=(datastore, '/' + blob_name))\n",
-        "        dataset = dataset.register(workspace=ws, name=blob_name, create_new_version=True)\n",
-        "        dataset = Dataset.get_by_name(ws, name=blob_name)\n",
-        "        print(\"Dataset registered for .tar file:\", blob_name)\n",
-        "\n",
-        "        # Configure and submit job\n",
-        "        src = ScriptRunConfig(\n",
-        "            source_directory=\"/mnt/batch/tasks/shared/LS_root/mounts/clusters/a100instance/code/Users/joseph.ribeiro/rapid-plankton/edge-ai\",\n",
-        "            script='azure_processing_tar_2025.py',\n",
-        "            arguments=['-m', '2',\n",
-        "                '-b', '2500',\n",
-        "                '--wsname', 'citdsdp4000nc6s-mlw',\n",
-        "                '--wssubscription_id', '25c7e1b1-ff04-418b-842b-29a58e065da7',\n",
-        "                '--wsresource_group', 'CIT-DS-RG-DP4000-NC6S',\n",
-        "                '--dsname', blob_name,\n",
-        "                '--datastorename', datastore_name],\n",
-        "            compute_target=compute_target,\n",
-        "            environment=env\n",
-        "        )\n",
-        "\n",
-        "        experiment = Experiment(workspace=ws, name='bigger-gpu-experiment')\n",
-        "        run = experiment.submit(config=src)\n",
-        "        run.wait_for_completion(show_output=True)\n",
-        "        return f\"Completed: {blob_name}\"\n",
-        "    except Exception as e:\n",
-        "        return f\"Failed: {blob_name} with error {e}\"\n",
-        "\n",
-        "# Filter blobs that are .tar files only\n",
-        "tar_blobs = [blob.name for blob in container_client.list_blobs() if blob.name.endswith('.tar')]\n",
-        "\n",
-        "# Use ThreadPoolExecutor to submit jobs concurrently\n",
-        "with ThreadPoolExecutor(max_workers=3) as executor:\n",
-        "    futures = {executor.submit(submit_job, blob_name): blob_name for blob_name in tar_blobs}\n",
-        "    for future in as_completed(futures):\n",
-        "        result = future.result()\n",
-        "        print(result)\n"
-      ],
-      "metadata": {
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        }
-      },
-      "id": "ebb06dc9-b07b-4865-abfd-ea76b40c7007"
-    },
-    {
-      "cell_type": "markdown",
-      "source": [],
-      "metadata": {
-        "nteract": {
-          "transient": {
-            "deleting": false
-          }
-        }
-      },
-      "id": "ae190fe9-4982-42d8-9882-2b4e24619915"
+      "metadata": {},
+      "id": "5f84a886-5239-4715-88d0-0e2309e7aa9d"
     }
   ],
   "metadata": {
