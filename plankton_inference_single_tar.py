@@ -135,26 +135,26 @@ def process_single_tar(tar_file_path, model_weights, train_dataset, cruise_name,
         else:
             date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        csv_filename, csv_filename_summarized = process_predictions_to_dataframe(
+                    imgs=imgs,
+                    preds=preds,
+                    label_numeric=label_numeric,
+                    vocab=learn.dls.vocab,
+                    cruise_name=cruise_name,
+                    date_str=date_str,
+                    time_str=Path(tar_file_path).stem,
+                    timestamp_path=temp_dir,
+                    results_dir=Path(temp_dir),
+                    processed_dir=Path(temp_dir),
+                    density_constant=density_constant,
+                    csv_filename=None,
+                    tar_file_path=tar_file_path
+                )
 
+        print(f"[INFO] Detailed results saved to {csv_filename}")
+        print(f"[INFO] Summary results saved to {csv_filename_summarized}")
 
-
-        df = process_predictions_to_dataframe(
-            imgs=imgs,
-            preds=preds,
-            label_numeric=label_numeric,
-            vocab=learn.dls.vocab,
-            cruise_name=cruise_name,
-            date_str=date_str,
-            time_str=Path(tar_file_path).stem,
-            timestamp_path=temp_dir,
-            results_dir=Path(temp_dir),
-            processed_dir=Path(temp_dir),
-            density_constant=density_constant,
-            csv_filename=None,
-            tar_file_path=tar_file_path
-        )
-
-    return df
+    return csv_filename
 
 
 
@@ -233,7 +233,7 @@ if __name__ == "__main__":
 
 
 
-    df_result = process_single_tar(
+    csv_result = process_single_tar(
         tar_file_path=tar_file_path,
         model_weights=resolved_model_weights,
         train_dataset=args.train_dataset,
@@ -242,20 +242,12 @@ if __name__ == "__main__":
         density_constant=args.density_constant
     )
 
-    if df_result is not None:
-        output_path = Path("outputs/results.csv")
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        df_result.to_csv(output_path, index=False)
-        print(f"[INFO] Results saved to {output_path}")
-    else:
-        print("[INFO] No results generated for this tar file.")
-
-
-    # Upload to Azure Blob Storage
-    datastore = get_datastore_path(ws, args.datastorename)
-    blob_file_path = f"{args.dsname}/{os.path.basename(output_path)}"
-    upload_file_to_blob(datastore, output_path, blob_file_path)
-    print(f"Uploaded file to blob: {blob_file_path}")
+    if csv_result is not None:
+        # Upload to Azure Blob Storage
+        datastore = get_datastore_path(ws, args.datastorename)
+        blob_file_path = f"{args.dsname}/{os.path.basename(csv_result)}"
+        upload_file_to_blob(datastore, csv_result, blob_file_path)
+        print(f"Uploaded file to blob: {blob_file_path}")
 
 
 
