@@ -9,6 +9,8 @@ from src.inference import conduct_plankton_inference
 from src.random_samples import get_random_samples
 from src.generate_report import create_word_document
 
+
+# TODO: Place the argsparse into a utility python script for modularity and ease of maintenance - IC 
 if __name__ == "__main__":
     print("[INFO] Starting main.py", flush=True)
 
@@ -44,17 +46,21 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--batch_size', type=int,
-        default=128, # Increase for larger machines; 80GB GPU can use batch_size of 600
+        default=128, # Increase for larger machines; 80GB GPU can use batch_size of 600 # Where did you get the value from? Give the reference -IC
+        # https://stackoverflow.com/questions/46654424/how-to-calculate-optimal-batch-size # Deep Learning book by Goodfellow et al., chapter 8:
+        # Remember, Architecture also matters -> 8 gb GDDR4 VRAM on a  GPU won't perform better than 4 gb HBM2 VRAM 
         help='Batch size for processing. Adapt based on memory availability.'
     )
 
     parser.add_argument(
         '--density_constant',
-        type=int, default=340,
+        type=int, default=340,          # why 340? -> avoid "magic numbers" -> give them proper definitions - IC
         help='Density constant for normalization to get results in units per liter.'
     )
     args = parser.parse_args()
-
+    
+    
+    
     # Extract the arguments for use within the individual functions
     SOURCE_BASE_DIR = args.source_dir
     MODEL_NAME = args.model_name
@@ -64,9 +70,12 @@ if __name__ == "__main__":
     DENSITY_CONSTANT = args.density_constant
     print("[INFO] Arguments received:", args, flush=True)
 
+    # TODO: Make max_jobs dynamic based on compute target -IC 
     # Define the number of workers to use for parallelization
     max_jobs = min(8, os.cpu_count() or 4)  # Use up to 8 workers or CPU count, whichever is smaller
 
+    
+    # TODO: Config section should be isolated in their own config.py script
     # Set the correct model based on user input
     if 'ospar' in MODEL_NAME.lower():
         # OSPAR classifier for six number of classes; significantly faster compared to the default option
@@ -80,12 +89,16 @@ if __name__ == "__main__":
         MODEL_NAME = "ResNet50-Detailed" # Reset the variable in case different spelling is used
         print(f"[INFO] User has chosen to use the {MODEL_NAME} model with weights: {model_weights}, flush=True")
     
+    
+    # TODO: Change Print statement to an Raise Error statement - IC
     # Check if the model weights file exists
     # FastAI hardcodes the location in /models/ and does not add .pth initially
     if not os.path.exists(os.path.join("models", f"{model_weights}.pth")):
         print(f"Error: The model weights file '{model_weights}' does not exist.", flush=True)
         sys.exit(1)  # Exit with an error code
 
+    
+    
     # Conduct inference
     # Note: This is the only script that uses GPU (CPU option available, but discouraged)
     results_dir, processed_dir = conduct_plankton_inference(SOURCE_BASE_DIR, # Path to raw .tar dir
@@ -98,11 +111,14 @@ if __name__ == "__main__":
                                                             max_jobs # For parallelization in remove_corrupted_files.py
                                                             )
 
+    
+    # TODO: Place the Validation in a separate script please - IC 
     # Randomly select n samples of each predicted class for validation and future training iterations
     get_random_samples(results_dir,  CRUISE_NAME, TRAIN_DATASET, model_weights, n_images=100)
 
     # Generate the Word document detailing the cruise
     document_path = create_word_document(results_dir, CRUISE_NAME, DENSITY_CONSTANT, TRAIN_DATASET, model_weights)
 
+    # TODO: Use IC'S NPZ compression tool for compressing original data - IC
     # Compress original data for long-term storage
     # Not implemented yet
