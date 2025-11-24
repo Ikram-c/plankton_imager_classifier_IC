@@ -1,0 +1,96 @@
+graph TB
+%% === STYLES ===
+classDef core fill:#1E90FF,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef cloud fill:#FFD700,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+classDef db fill:#9ACD32,stroke:#000,color:#000,stroke-width:2px,rx:10px,ry:10px;
+
+%% === USERS ===
+User(("User<br/>Data Scientist"))
+
+%% === DATA HANDLING & PREPROCESSING ===
+subgraph "Data Handling & Preprocessing"
+  DataUtils["Data Utils<br/>src/utils.py"]:::core
+  CorruptedFiles["Corrupted Files Remover<br/>src/remove_corrupted_files.py"]:::core
+  RandomSamples["Random Samples<br/>src/random_samples.py"]:::core
+  ArchiveHandler["Archive Handler<br/>src/archive/"]:::core
+  Compression["Compression Module<br/>src/compression.py"]:::core
+end
+
+%% === MODEL TRAINING ===
+subgraph "Model Training"
+  Train["Training Pipeline<br/>train.py"]:::core
+  ResNet["ResNet Training<br/>src/train_resnet.py"]:::core
+end
+
+%% === INFERENCE & PREDICTION ===
+subgraph "Inference & Prediction"
+  InferenceSingle["Single Tar Inference<br/>plankton_inference_single_tar.py"]:::core
+  Inference["Inference Module<br/>src/inference.py"]:::core
+end
+
+%% === EVALUATION & REPORTING ===
+subgraph "Evaluation & Reporting"
+  Evaluation["Evaluation Module<br/>src/evaluate.py"]:::core
+  ReportVisualizations["Report Visualizations<br/>src/report_visualizations.py"]:::core
+  GenerateReport["Report Generator<br/>src/generate_report.py"]:::core
+end
+
+%% === UTILITY & SUPPORT ===
+subgraph "Utility & Support"
+  CommonUtils["Common Utils<br/>src/utils.py"]:::core
+  CompressionSupport["Compression Support<br/>src/compression.py"]:::core
+  ReportVisuals["Report Visuals<br/>src/report_visualizations.py"]:::core
+end
+
+%% === DATA FLOW ===
+User -->|"initiates data processing"| DataUtils
+DataUtils -->|"analyzes dataset"| CorruptedFiles
+DataUtils -->|"visualizes data"| RandomSamples
+DataUtils -->|"handles archives"| ArchiveHandler
+DataUtils -->|"compresses data"| Compression
+
+User -->|"trains model"| Train
+Train -->|"invokes training"| ResNet
+
+User -->|"executes inference"| InferenceSingle
+InferenceSingle -->|"processes tar archives"| Inference
+Inference -->|"loads models and predicts"| InferenceSingle
+
+User -->|"evaluates results"| Evaluation
+Evaluation -->|"computes metrics"| ReportVisualizations
+ReportVisualizations -->|"generates reports"| GenerateReport
+
+%% === CLOUD INTEGRATION ===
+subgraph "Cloud Integration"
+  AzureML["AzureML SDK<br/>Cloud Services"]:::cloud
+end
+
+InferenceSingle -->|"mounts datasets"| AzureML
+Evaluation -->|"uploads results"| AzureML
+
+%% === DATA STORAGE ===
+subgraph "Data Storage"
+  TarArchives["Tar Archives<br/>Raw Data Storage"]:::db
+  CSVResults["CSV Results<br/>Inference Outputs"]:::db
+end
+
+TarArchives -->|"stores raw images"| DataUtils
+Inference -->|"saves predictions"| CSVResults
+
+%% === CONTROL FLOW ===
+Train -->|"triggers training"| ResNet
+InferenceSingle -->|"triggers inference"| Inference
+Evaluation -->|"triggers report generation"| GenerateReport
+
+%% === EXTERNAL DEPENDENCIES ===
+subgraph "External Dependencies"
+  FastAI["FastAI<br/>Deep Learning Framework"]:::cloud
+  Matplotlib["Matplotlib<br/>Visualization Library"]:::cloud
+  Seaborn["Seaborn<br/>Statistical Data Visualization"]:::cloud
+  GeoPandas["GeoPandas<br/>Geospatial Data Handling"]:::cloud
+end
+
+Train -->|"utilizes"| FastAI
+Evaluation -->|"utilizes"| Matplotlib
+Evaluation -->|"utilizes"| Seaborn
+Evaluation -->|"utilizes"| GeoPandas
