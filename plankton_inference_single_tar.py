@@ -24,12 +24,18 @@ def get_datastore_path(ws, ds_name):
     return datastore
 
 def upload_file_to_blob(datastore, local_file_path, blob_file_path):
-    datastore.upload_files(
-        files=[local_file_path],
-        target_path=blob_file_path,
-        overwrite=True,
-        show_progress=False
-    )
+    try:
+        print(f"[DEBUG] Uploading {local_file_path} to Azure blob at {blob_file_path}")
+        datastore.upload_files(
+            files=[local_file_path],
+            target_path=blob_file_path,
+            overwrite=True,
+            show_progress=False
+        )
+        print(f"[INFO] Successfully uploaded {local_file_path} to {blob_file_path}")
+    except Exception as e:
+        print(f"[ERROR] Failed to upload {local_file_path} to {blob_file_path}: {e}")
+
 
 # -------------------------
 # Create minimal dummy dataset for FastAI
@@ -121,13 +127,24 @@ def process_single_tar(tar_file_path, model_weights, train_dataset, cruise_name,
             print(f"[DEBUG] Exception type: {type(e)}")
             return None
 
+
+        import re
+        match = re.search(r'(\d{4}-\d{2}-\d{2})', tar_file_path)
+        if match:
+            date_str = match.group(1)
+        else:
+            date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+
+
         df = process_predictions_to_dataframe(
             imgs=imgs,
             preds=preds,
             label_numeric=label_numeric,
             vocab=learn.dls.vocab,
             cruise_name=cruise_name,
-            date_str="single_tar",
+            date_str=date_str,
             time_str=Path(tar_file_path).stem,
             timestamp_path=temp_dir,
             results_dir=Path(temp_dir),
